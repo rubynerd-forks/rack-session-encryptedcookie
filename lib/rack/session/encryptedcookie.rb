@@ -74,6 +74,10 @@ module Session
       if @hash.respond_to?(method)
         puts "[RSEC #{Thread.current[:request_id]}] delegating #{method} to #{@hash.class} (#{@hash})}"
 
+        if method == :clear
+          puts "[RSEC #{Thread.current[:request_id]}] :clear called!!! caller is: #{caller.join("\n")}"
+        end
+
         @hash.send(method, *args, &block).tap do |result|
           puts "[RSEC #{Thread.current[:request_id]}] method_missing -> #{method} => #{args} (#{result})"
         end
