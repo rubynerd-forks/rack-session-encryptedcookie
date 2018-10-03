@@ -72,6 +72,8 @@ module Session
 
     def method_missing(method, *args, &block)
       if @hash.respond_to?(method)
+        puts "[RSEC #{Thread.current[:request_id]}] delegating #{method} to #{@hash.class} (#{@hash})}"
+
         @hash.send(method, *args, &block).tap do |result|
           puts "[RSEC #{Thread.current[:request_id]}] method_missing -> #{method} => #{args} (#{result})"
         end
