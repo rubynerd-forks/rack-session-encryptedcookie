@@ -54,19 +54,25 @@ module Session
     end
 
     def call!(env)
+      puts "[RSEC #{Thread.current[:request_id]}] init!"
+
       @cb = env['async.callback']
       env['async.callback'] = method(:save_session) if @cb
       env['rack.session']   = self
       load_session(env)
 
       if @app
+        puts "[RSEC #{Thread.current[:request_id]}] app specified! calling..."
         @cb ? @app.call(env) : save_session(@app.call(env))
       else
+        puts "[RSEC #{Thread.current[:request_id]}] app not specified! calling NOT_FOUND!"
         @cb ? @cb.call(NOT_FOUND) : NOT_FOUND
       end
     end
 
     def method_missing(method, *args, &block)
+      puts "[RSEC #{Thread.current[:request_id]}] method_missing -> #{method} => #{args} (#{block})"
+
       if @hash.respond_to?(method)
         @hash.send(method, *args, &block)
       else
@@ -79,12 +85,30 @@ module Session
     # Load the sesssion data from the cookie
     # @return [Hash, nil] Session data
     def load_session(env)
+      puts "[RSEC #{Thread.current[:request_id]}] loading session..."
+
       @hash.clear unless @hash.empty?
+
       r = Rack::Request.new(env)
+
+      puts "[RSEC #{Thread.current[:request_id]}] request parsed: host => #{r.host}, cookies => #{r.cookies}"
+
       @host = r.host if @opts[:domain].nil?
       cookie = r.cookies[@opts[:cookie_name]]
-      return if cookie.nil?
-      @hash = Marshal.load(cipher(:decrypt, cookie)) rescue {}
+
+      if cookie.nil?
+        puts "[RSEC #{Thread.current[:request_id]}] cookie is blank! returning..."
+        return
+      end
+
+      puts "[RSEC #{Thread.current[:request_id]}] cookie found! unmarshalling..."
+      begin
+        @hash = Marshal.load(cipher(:decrypt, cookie))
+      rescue => ex
+        puts "[RSEC #{Thread.current[:request_id]}] cookie unmarshal error! #{ex.class} '#{ex.message}'"
+
+        {}
+      end
     end
 
     # Add our cookie to the response
