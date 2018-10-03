@@ -103,7 +103,7 @@ module Session
 
       puts "[RSEC #{Thread.current[:request_id]}] cookie found! unmarshalling..."
       begin
-        @hash = Marshal.load(cipher(:decrypt, cookie).tap { |o| puts "[RSEC #{Thread.current[:request_id]}] decrypt succeeded! #{o}" } ).tap do |o|
+        @hash = Marshal.load(cipher(:decrypt, cookie).tap { |o| puts "[RSEC #{Thread.current[:request_id]}] decrypt succeeded! #{o.inspect}" } ).tap do |o|
           puts "[RSEC #{Thread.current[:request_id]} finished cookie parse! #{o}"
         end
       rescue => ex
