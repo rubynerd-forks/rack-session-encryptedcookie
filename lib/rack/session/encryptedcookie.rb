@@ -91,7 +91,7 @@ module Session
 
       r = Rack::Request.new(env)
 
-      puts "[RSEC #{Thread.current[:request_id]}] request parsed: host => #{r.host}, cookies => #{r.cookies}"
+      puts "[RSEC #{Thread.current[:request_id]}] request parsed: host => #{r.host}, path => #{r.path}, cookies => #{r.cookies}"
 
       @host = r.host if @opts[:domain].nil?
       cookie = r.cookies[@opts[:cookie_name]]
