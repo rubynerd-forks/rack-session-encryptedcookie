@@ -71,10 +71,10 @@ module Session
     end
 
     def method_missing(method, *args, &block)
-      puts "[RSEC #{Thread.current[:request_id]}] method_missing -> #{method} => #{args} (#{block})"
-
       if @hash.respond_to?(method)
-        @hash.send(method, *args, &block)
+        @hash.send(method, *args, &block).tap do |result|
+          puts "[RSEC #{Thread.current[:request_id]}] method_missing -> #{method} => #{args} (#{result})"
+        end
       else
         raise ArgumentError.new("Method `#{method}` doesn't exist.")
       end
